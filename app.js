@@ -1,31 +1,47 @@
 const express = require("express");
 const morgan = require("morgan");
-const { client, syncAndSeed } = require("./webpages/javascript/movieData");
-const movieDetails = require("./webpages/javascript/movieDetails");
-const movieList = require("./webpages/javascript/movieList");
+const {
+  syncAndSeed,
+  models: { Movie, Category },
+} = require("./Assets/Data/movieData");
+const CategoryList = require("./Assets/Webpages/CategoryList");
+const movieDetails = require("./Assets/Webpages/movieDetails");
+const nomineeList = require("./Assets/Webpages/nomineeList");
 const app = express();
 
 app.use(morgan("dev"));
-app.use(express.static(__dirname + "/webpages"));
+
+app.use(express.static(__dirname + "/Assets"));
 
 app.get("/", async (req, res) => {
-  const movies = await client.query("SELECT * FROM Movie");
-  res.send(movieList(movies.rows));
+  const categories = await Category.findAll();
+  res.send(CategoryList(categories));
 });
 
-app.get("/movies/:id", async (req, res) => {
-  const movie = await client.query("SELECT * FROM Movie WHERE id=$1", [
-    req.params.id,
-  ]);
-  res.send(movieDetails(movie.rows[0]));
+app.get("/category/:id", async (req, res) => {
+  const category = await Category.findAll({
+    where: {
+      id: req.params.id,
+    },
+    include: Movie,
+  });
+  res.send(nomineeList(category[0]));
 });
 
-const PORT = process.env.PORT || 1337;
+app.get("/nominee/:id", async (req, res) => {
+  const movie = await Movie.findAll({
+    where: {
+      id: req.params.id,
+    },
+    include: Category,
+  });
+  res.send(movieDetails(movie[0]));
+});
 
 const setUp = async () => {
   try {
-    await client.connect();
     await syncAndSeed();
+    const PORT = process.env.PORT || 1337;
     await app.listen(PORT, () => console.log(`App listening in port ${PORT}`));
   } catch (ex) {
     console.log(ex);

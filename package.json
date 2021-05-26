@@ -15,8 +15,9 @@
   "dependencies": {
     "express": "^4.17.1",
     "html-template-tag": "^1.0.0",
-    "morgan": "^1.9.0",
+    "morgan": "^1.10.0",
     "node-time-ago": "^1.0.0",
-    "pg": "^8.6.0"
+    "pg": "^8.6.0",
+    "sequelize": "^6.6.2"
   }
 }
